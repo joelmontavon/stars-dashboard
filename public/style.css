@@ -1,0 +1,81 @@
+    body {
+      font: 16pt font-family: Calibri;
+    }
+    
+    .label,
+    .donut_chart_text,
+    .table_text {
+      font: 16pt font-family: Cabin, sans-serif;
+    }
+    
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+    
+    /*.y.axis path,
+    .y.axis line {
+      stroke: none;
+    }*/
+    
+    .oad {
+      fill:  rgb(0,188,228);
+      stroke:  rgb(0,188,228);
+    }
+    
+    .rasa {
+      fill:  rgb(125,63,152);
+      stroke:  rgb(125,63,152);
+    }
+    
+    .statins {
+      fill: rgb(122,193,67);
+      stroke: rgb(122,193,67);
+    }
+    
+    .bad {
+      fill: #c62f29;
+    }
+    
+    .so-so {
+      fill: #dbba34;
+    }
+    
+    .good {
+      fill: #2c9c69;
+    }
+    
+    .four_star_line,
+    .goal_line {
+      fill: none;
+      stroke-width: 5px;
+    }
+    
+     path {
+      fill: none;
+    }
+    
+.top-buffer { margin-top:20px; }
+
+    .map {
+      display: block;
+      margin-left: auto; 
+      margin-right: auto;
+      /*width: 950px;
+      height: 400px;*/
+    }
+    
+    .datamaps {
+  position: relative;
+}
+
+.d3-tip {
+padding: 4px;
+border-radius: 1px;
+background-color: #FFF;
+box-shadow: 1px 1px 5px #CCC;
+/*font-size: 12px;*/
+border: 1px solid #CCC;
+}

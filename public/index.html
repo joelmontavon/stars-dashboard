@@ -1,0 +1,513 @@
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=8; IE=9; IE=10; IE=11" />
+  <!--<link href='https://fonts.googleapis.com/css?family=Cabin' rel='stylesheet' type='text/css'>-->
+  <script src="bower_components/lodash/lodash.min.js"></script>
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="/style/bootstrap.min.css" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="bower_components/angular/angular.min.js"></script>
+  <script src="bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+  <script src="bower_components/angular-input-masks/angular-input-masks-standalone.min.js"></script>
+  <script src="bower_components/d3/d3.min.js"></script>
+  <script src="bower_components/topojson/topojson.js"></script>
+  <script src="data/datamaps.usa.min.js"></script>
+  <script src="bower_components/d3-tip/index.js"></script>
+  <script src="app/app.js"></script>
+  <script src="app/utility-services.js"></script>
+  <script src="app/data-services.js"></script>
+  <script src="app/chart-services.js"></script>
+  <script src="app/filters.js"></script>
+  <script src="app/controllers.js"></script>
+</head>
+
+<body ng-app="app">
+  <div class="container">
+    <ul class="nav nav-tabs" role="tablist">
+      <li role="presentation" class="active">
+        <a href="#contracts" aria-controls="contracts" role="tab" data-toggle="tab">Contract Performance</a>
+      </li>
+      <li role="presentation">
+        <a href="#measures" aria-controls="measures" role="tab" data-toggle="tab">Measure Performance</a>
+      </li>
+      <li role="presentation">
+        <a href="#activity" aria-controls="activity" role="tab" data-toggle="tab">Program Activity</a>
+      </li>
+      <li role="presentation">
+        <a href="#outcomes" aria-controls="outcomes" role="tab" data-toggle="tab">Program Outcomes</a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane active" id="contracts" ng-controller="contractsController">
+        <div class="row top-buffer"></div>
+        <div class="col-md-6">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Projected Year-End 2015 Adherence Scores</h3>
+            </div>
+            <table id="contracts-table" class="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>Contract</th>
+                  <th>Members</th>
+                  <th>Diabetes</th>
+                  <th>RASAs</th>
+                  <th>Statins</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="row">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Options</h3>
+              </div>
+              <div class="panel-body">
+                <div class="form-horizontal">
+                  <div class="form-group">
+                    <label class="col-md-2 control-label">Group by:</label>
+                    <div class="col-md-10">
+                      <div id="radio" class="radio">
+                        <label>
+                          <input type="radio" ng-model="preConsolidation" ng-change="update()" value="true" checked="" /> Prior to consolidation
+                        </label>
+                        <label>
+                          <input type="radio" ng-model="preConsolidation" ng-change="update()" value="false" /> After consolidation
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group checkbox">
+                  <div class="col-md-offset-2 col-md-10">
+                    <label>
+                      <input id="contracts-checkbox" type="checkbox" ng-model="includeConsolidated" ng-change="update()" /> Include consolidating contracts
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Contracts at 4-Stars</h3>
+              </div>
+              <div class="panel-body text-center">
+                <div class="col-md-6 center-block">
+                  <svg id="contracts-donut">
+                    <g></g>
+                  </svg>
+                </div>
+                <div class="col-md-6 center-block">
+                  <table>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <svg height="16" width="16">
+                            <rect class="good" height="16" width="16"></rect>
+                          </svg>
+                        </td>
+                        <td> All Measures at 4-Stars+</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <svg height="16" width="16">
+                            <rect class="so-so" height="16" width="16"></rect>
+                          </svg>
+                        </td>
+                        <td> 1-2 Measures at 4-Stars+</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <svg height="16" width="16">
+                            <rect class="bad" height="16" width="16"></rect>
+                          </svg>
+                        </td>
+                        <td> No Measures at 4-Stars+</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Members to Goal</h3>
+              </div>
+              <div class="panel-body">
+                <div class="col-md-8">
+                  <svg id="contracts-bar-chart">
+                    <g></g>
+                  </svg>
+                </div>
+                <div class="col-md-4">
+                  <table>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <svg height="16" width="16">
+                            <rect class="oad" height="16" width="16"></rect>
+                          </svg>
+                        </td>
+                        <td> Diabetes</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <svg height="16" width="16">
+                            <rect class="rasa" height="16" width="16"></rect>
+                          </svg>
+                        </td>
+                        <td> RASAs</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <svg height="16" width="16">
+                            <rect class="statins" height="16" width="16"></rect>
+                          </svg>
+                        </td>
+                        <td> Statins</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>  
+          <div class="row">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Projected Year-End 2015 Adherence Scores</h3>
+              </div>    
+              <div class="panel-body">
+                <svg id="contracts-line-chart">
+                  <g></g>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="measures" ng-controller="measuresController">
+        <div class="row top-buffer"></div>
+        <div class="col-md-6">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Contract Performance</h3>
+            </div>
+            <div class="panel-body">
+              <svg id="measures-bar-chart">
+                <g></g>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="row">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Options</h3>
+              </div>
+              <div class="panel-body">
+                <div class="form-horizontal">
+                  <div class="form-group">
+                    <label class="col-md-2 control-label">Measure:</label>
+                    <div id="option" class="col-md-10">
+                      <select id="select" ng-model="selectedTherapy" ng-change="update()">
+                        <option ng-repeat="item in options" value="{{item.value}}">{{item.name}}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-md-2 control-label">Threshold:</label>
+                    <div class="col-md-10">
+                      <div id="radio" class="radio">
+                        <label>
+                          <input type="radio" ng-model="threshold" ng-change="update()" name="optionsRadios" id="optionsRadios1" value="goal" checked="" /> Contract Goal
+                        </label>
+                        <label>
+                          <input type="radio" ng-model="threshold" ng-change="update()" name="optionsRadios" id="optionsRadios2" value="cutpoint" /> Projected 4-Star Cutpoint
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group checkbox">
+                    <div class="col-md-offset-2 col-md-10">
+                      <label>
+                        <input id="measures-checkbox" type="checkbox" ng-model="includeConsolidated" ng-change="update()" /> Include consolidating contracts
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Contracts at {{thresholds[threshold].title}}</h3>
+              </div>
+              <div class="panel-body">
+                <div class="col-md-6 center-block">
+                  <svg id="measures-donut">
+                    <g></g>
+                  </svg>
+                </div>
+                <div class="col-md-6 center-block">
+                  <table>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <svg height="16" width="16">
+                            <rect class="good" height="16" width="16"></rect>
+                          </svg>
+                        </td>
+                        <td> {{thresholds[threshold].good}}</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <svg height="16" width="16">
+                            <rect class="bad" height="16" width="16"></rect>
+                          </svg>
+                        </td>
+                        <td> {{thresholds[threshold].bad}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="activity" ng-controller="activityController">
+        <div class="row top-buffer"></div>
+        <div class="col-md-6">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Activity by State</h3>
+            </div>
+            <div class="panel-body">
+              <div id="map" class="map datamaps"></div>
+              <svg id="activity-bar-chart">
+                <g></g>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="row">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Options</h3>
+              </div>
+              <div class="panel-body">
+                <div class="form-horizontal">
+                  <div class="form-group">
+                    <div class="col-md-2">
+                      <label>Metric: </label>
+                    </div>
+                    <div class="col-md-10">
+                      <select ng-model="selectedOptionVal" ng-change="selectChanged()">
+                        <option ng-repeat="item in options" value="{{item.value}}">{{item.name}}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-md-2">
+                      <label>Contract: </label>
+                    </div>
+                    <div class="col-md-10">
+                      <select ng-model="selectedContract" ng-change="selectChanged()">
+                        <option value="all">All</option>
+                        <option ng-repeat="item in contracts | unique: 'contract'" value="{{item.contract}}">{{item.contract}}</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Activity by Program</h3>
+              </div>
+              <div class="panel-body">
+                <table class="table table-striped table-hover">
+                  <thead>
+                    <tr>
+                      <th>Program</th>
+                      <th>Targeted</th>
+                      <th>Outreached (% of targeted)</th>
+                      <th>Reached (% of outreached)</th>
+                      <th>Completed (% of reached)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="obj in progData | orderBy : 'key'">
+                      <td>{{obj.key}}</td>
+                      <td>{{obj.values[obj.key].targeted.value | number: 0}}</td>
+                      <td>{{obj.values[obj.key].outreached.value | number: 0}} ({{(obj.values[obj.key].outreached.value/obj.values[obj.key].targeted.value) | percentage: 0}})</td>
+                      <td>{{obj.values[obj.key].reached.value | number: 0}} ({{(obj.values[obj.key].reached.value/obj.values[obj.key].outreached.value) | percentage: 0}})</td>
+                      <td>{{obj.values[obj.key].completed.value | number: 0}} ({{(obj.values[obj.key].completed.value/obj.values[obj.key].reached.value) | percentage: 0}})</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Activity by Measure</h3>
+              </div>
+              <div class="panel-body">
+                <table class="table table-striped table-hover">
+                  <thead>
+                    <tr>
+                      <th>Program</th>
+                      <th>Diabetes</th>
+                      <th>RASAs</th>
+                      <th>Statins</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="obj in progDataByTherapy | orderBy : 'key'">
+                      <td>{{obj.key}}</td>
+                      <td>{{obj.values[obj.key]['Diabetes']['value'] | number: 0}} ({{obj.values[obj.key]['Diabetes']['pct'] | percentage: 0}})</td>
+                      <td>{{obj.values[obj.key]['High Blood Pressure']['value'] | number: 0}} ({{obj.values[obj.key]['High Blood Pressure']['pct'] | percentage: 0}})</td>
+                      <td>{{obj.values[obj.key]['High Cholesterol']['value'] | number: 0}} ({{obj.values[obj.key]['High Cholesterol']['pct'] | percentage: 0}})</td>
+                    </tr>
+                    <tr>
+                      <td>Totals</td>
+                      <td>{{totals['Diabetes'] | number: 0}}</td>
+                      <td>{{totals['High Blood Pressure'] | number: 0}}</td>
+                      <td>{{totals['High Cholesterol'] | number: 0}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="outcomes" ng-controller="outcomesController">
+        <div class="row top-buffer"></div>
+        <div class="col-md-6">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Activity</h3>
+            </div>
+            <div class="panel-body">
+              <svg id="outcomes-vert-bar-chart">
+                <g></g>
+              </svg>
+              <div id="outcomes-vert-bar-chart"></div>
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>Program</th>
+                    <th ng-switch="selectMetric">
+                      <span ng-switch-when="Days to Refill">Days to Refill</span>
+                      <span ng-switch-when="Days Missed in 60 Days after Call">Days Missed in 60 Days after Call</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="(key, obj) in outcomes | orderBy : 'key'">
+                    <td>{{key}}</td>
+                    <td ng-switch="selectMetric">
+                      <span ng-switch-when="Days to Refill">{{obj.days_to_refill | number: 0}}</span>
+                      <span ng-switch-when="Days Missed in 60 Days after Call">{{obj.days_missed | number: 0}}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+           <div class="row">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Activity by Program</h3>
+              </div>
+              <div class="panel-body">
+                <table class="table table-striped table-hover">
+                  <thead>
+                    <tr>
+                      <th class="col-md-4">Program</th>
+                      <th class="col-md-2">Reach Rate</th>
+                      <th class="col-md-2">NNT</th>
+                      <th class="col-md-2">Calls</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="obj in activity | orderBy : 'key'">
+                      <td>{{obj.key}}</td>
+                      <td><input class="form-control" ng-model="obj.values.reachRate.value" ui-percentage-mask="0"></input></td>
+                      <td><input class="form-control" ng-model="outcomes[obj.key].nnt" ui-number-mask="0" ui-negative-number="0"></input></td>
+                      <td>{{outcomes[obj.key].nnt/obj.values.reachRate.value*gap | number: 0}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="row">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Options</h3>
+              </div>
+              <div class="panel-body">
+                <div class="form-horizontal">
+                  <div class="form-group">
+                    <div class="col-md-2">
+                      <label>Metric: </label>
+                    </div>
+                    <div class="col-md-10">
+                      <select ng-model="selectMetric" ng-change="selectChanged()">
+                        <option ng-repeat="item in metrics" value="{{item}}">{{item}}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-md-2">
+                      <label>Contract: </label>
+                    </div>
+                    <div class="col-md-10">
+                      <select ng-model="selectedContract" ng-change="selectChanged()">
+                        <option value="all">All</option>
+                        <option ng-repeat="item in contracts | unique: 'contract'" value="{{item.contract}}">{{item.contract}}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-md-2">
+                      <label>Gap: </label>
+                    </div>
+                    <div class="col-md-10">
+                      <input ng-model="gap" class="form-control"  ui-number-mask="0" ui-negative-number="0"></input>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>      
+    </div>
+  </div>
+</body>
+
+</html>
